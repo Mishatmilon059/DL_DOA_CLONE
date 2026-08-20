@@ -40,6 +40,7 @@ SYSTEM REQUIREMENTS
 - Matplotlib
 - tqdm
 - scikit-learn
+- opencv-python (cv2 is required by src/TVT_Blob_Inference.py for blob/peak detection)
 
 --------------------------------------------------------------------
 INSTALLATION & SETUP
@@ -53,9 +54,17 @@ INSTALLATION & SETUP
    
    conda activate demo
 
-4. Install required packages:
+3. Install required packages:
 
-   conda install tensorflow numpy scipy matplotlib scikit-learn tqdm (PREVIOUS SYSTEM REQUIREMENTS) ...
+   pip install -r requirements.txt
+
+   (or manually: conda install tensorflow numpy scipy matplotlib scikit-learn tqdm
+    && pip install opencv-python)
+
+4. The UNet model is split into 7z parts (models/inf_model_007_256_unet.7z.001-005).
+   Extract it before running z_unet/main.py — see models/readme.txt for the
+   7-Zip commands, or run the Colab notebook (DLDOA_Colab.ipynb) which does
+   this automatically.
 
 --------------------------------------------------------------------
 HOW TO REPRODUCE THE EXPERIMENTS
@@ -86,7 +95,11 @@ C. Compare ResNet vs UNet (comparative analysis):
     python z_resnet_vs_unet/comparative.py
 
 Output:
-    → figures_comparative/comparative_results.png
+    → figures_resnet_vs_unet/resnet_vs_unet_comparison.png
+
+NOTE: This script only reads the resnet_rmse.pkl / resnet_pd.pkl and
+unet_rmse.pkl / unet_pd.pkl files produced by steps A and B above — run
+those first.
 
 
 --------------------------------------------------------------------

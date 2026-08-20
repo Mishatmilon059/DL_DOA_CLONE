@@ -1,0 +1,14 @@
+# Extracted UNet model (~125MB) — exceeds GitHub's 100MB file limit.
+# Reconstruct it locally from DL_DOA/models/inf_model_007_256_unet.7z.001-005
+# (see DL_DOA/models/readme.txt or DLDOA_Colab.ipynb).
+DL_DOA/models/inf_model_007_256_unet.h5
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Generated dataset dumps
+/dataset/
