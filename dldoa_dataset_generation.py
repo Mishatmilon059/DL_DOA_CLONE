@@ -747,6 +747,23 @@ def generate_test_conditions_hardware(error_deg_values=None):
 # 7. NUMPY DATASET SAVER  (save to .npz for offline use)
 # =====================================================================
 
+def _to_ragged_object_array(arrays):
+    """
+    Build a 1-D object ndarray holding per-sample feature arrays of
+    varying shape (features has shape (2, L) with L differing per
+    sample). ``np.array(arrays, dtype=object)`` is unsafe here: NumPy
+    first tries to infer a common regular shape across the whole list
+    and raises "could not broadcast input array" as soon as two
+    samples' L values disagree (e.g. whenever L is drawn randomly, as
+    in the validation set). Filling a pre-allocated object array
+    element-by-element sidesteps that shape inference entirely.
+    """
+    out = np.empty(len(arrays), dtype=object)
+    for i, arr in enumerate(arrays):
+        out[i] = arr
+    return out
+
+
 def save_training_dataset(output_dir, n_samples=10000, sigma=0.07,
                           M=256, amps_type='ones', normalize_gt=False):
     """
@@ -828,7 +845,7 @@ def save_validation_dataset(output_dir, seed=42, sigma=0.07, M=256,
     np.savez_compressed(os.path.join(output_dir, 'val_data.npz'), data=all_data)
     np.savez_compressed(os.path.join(output_dir, 'val_gt.npz'), data=all_gt)
     np.savez_compressed(os.path.join(output_dir, 'val_meta.npz'), data=all_meta)
-    np.save(os.path.join(output_dir, 'val_features.npy'), np.array(all_features, dtype=object), allow_pickle=True)
+    np.save(os.path.join(output_dir, 'val_features.npy'), _to_ragged_object_array(all_features), allow_pickle=True)
     print(f"Saved validation data: {all_data.shape}, GT: {all_gt.shape}")
     return all_data, all_gt
 
@@ -877,7 +894,7 @@ def save_test_dataset(output_dir, examples_per_condition=1000, seed=42,
     np.savez_compressed(os.path.join(output_dir, 'test_data.npz'), data=all_data)
     np.savez_compressed(os.path.join(output_dir, 'test_gt.npz'), data=all_gt)
     np.savez_compressed(os.path.join(output_dir, 'test_meta.npz'), data=all_meta)
-    np.save(os.path.join(output_dir, 'test_features.npy'), np.array(all_features, dtype=object), allow_pickle=True)
+    np.save(os.path.join(output_dir, 'test_features.npy'), _to_ragged_object_array(all_features), allow_pickle=True)
     print(f"Saved test data: {all_data.shape}, GT: {all_gt.shape}")
     return all_data, all_gt
 
