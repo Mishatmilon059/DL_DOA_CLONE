@@ -139,7 +139,87 @@ loss curve looks.
 
 ---
 
+## Result after all three fixes (60 epochs, 240,000 fresh samples, 8000-sample eval)
+
+Both self-tests pass, so for the first time the architecture is actually being measured
+rather than a bug:
+
+```
+TEST A (RMSE floor): chance = 0.5774, mean RMSE = 0.4787  -> PASS
+TEST B (SNR trend) : corr(SNR, Pd) = 0.917, Pd range 0.430 -> PASS
+```
+
+| SNR | PIA RMSE | PIA Pd | UNet Pd | Pd as % of UNet |
+|---|---|---|---|---|
+| -10 | 0.561 | 0.190 | 0.223 | 85% |
+| -5 | 0.526 | 0.339 | 0.471 | 72% |
+| 0 | 0.510 | 0.463 | 0.679 | 68% |
+| 5 | 0.475 | 0.526 | 0.813 | 65% |
+| 10 | 0.447 | 0.576 | 0.888 | 65% |
+| 15 | 0.442 | 0.608 | 0.924 | 66% |
+| 20 | 0.437 | 0.620 | 0.944 | 66% |
+| 25 | 0.431 | 0.620 | 0.951 | 65% |
+
+Mean Pd 69% of UNet, 72% of ResNet. Mean RMSE 1.45x worse — but only **1.02x at
+-10 dB** (statistically indistinguishable) versus 2.07x at 25 dB.
+
+### Where the gap actually is
+
+The error is not uniform, it is concentrated at high SNR, and Pd **saturates**:
+PIA goes 0.608 -> 0.620 from 15 to 25 dB while UNet goes 0.924 -> 0.951. Once noise
+stops being the binding constraint, something structural caps the model.
+
+Two measurements identify it:
+
+1. **Pixel quantization.** The 256 grid spans 6.703 rad, so one pixel is 0.478 deg at
+   broadside (worse toward endfire). PIA's high-SNR RMSE of 0.431 deg is **0.90 pixel** —
+   the integer-pixel limit. UNet reaches 0.209 deg = **0.44 pixel**, i.e. genuinely
+   sub-pixel, because its blobs are clean enough for the detector's centroid to interpolate.
+2. **Coarse physics grid.** G_GRID = 32 gives 0.098 rad (5.6 deg) spacing, and the decoder
+   then has to upsample 8x to reach 256.
+
+### Caveat that matters for any "lightweight" claim
+
+| Model | Params | Pd@25dB | Pd per M params |
+|---|---|---|---|
+| UNet | 31,276,481 | 0.951 | 0.030 |
+| ResNet | 469,393 | 0.938 | 1.998 |
+| PIA-Net | 362,125 | 0.620 | 1.711 |
+
+Comparing against UNet's 31M parameters flatters PIA-Net, but **ResNet is the relevant
+efficient baseline: only 1.3x larger, far more accurate, and ahead on
+accuracy-per-parameter too**. So "lightweight therefore competitive" does not hold today.
+The honest claim is that the architecture works and its remaining gap has an identified,
+addressable cause — not that it beats the baselines.
+
 ## Roadmap
+
+### Improvement levers, in priority order
+
+1. **DARK sub-pixel decoding — no retraining** (shipped as Part 12.6). A Gaussian blob is
+   a quadratic in log space, so a 2nd-order Taylor expansion about the peak recovers the
+   sub-pixel offset in closed form. Verified on synthetic blobs at this project's blob
+   width (sigma = 2.67 px): 0.385 -> 0.000 px noiseless, 0.475 -> 0.044 px at noise 0.02
+   (10.8x), 0.608 -> 0.154 px at noise 0.05 (3.9x). On an untrained model's real predicted
+   heatmaps it still gave 3.4x. Directly attacks the measured 0.90-pixel ceiling.
+2. **Training budget and a gentler LR schedule.** 240,000 samples versus the reference's
+   ~5,000,000 (21x less), and ReduceLROnPlateau with patience=5 cut the LR six times in
+   60 epochs, reaching 2.3e-5 by epoch 58 while val_loss was still creeping down. Raise
+   STEPS_PER_EPOCH/EPOCHS, patience to ~12, and floor min_lr around 5e-5.
+3. **SimCC-style coordinate classification** (ECCV 2022, arXiv 2107.03332). Splits each
+   axis into bins instead of regressing a 2-D heatmap, which removes the 256x256 upsampling
+   stack entirely (the source of both the memory pressure and the quantization error) and
+   is sub-pixel by construction; the paper reports >55% fewer GFLOPs at higher accuracy,
+   and explicitly targets low-resolution inputs — this project's input is 16x16.
+   Caveat: SimCC assumes a fixed keypoint count, while L varies 1..9 here, so it needs an
+   L_max-slot plus confidence head rather than a drop-in port.
+4. **Finer physics grid (G_GRID 32 -> 48/64).** Halves or quarters the upsampling burden.
+   Blocked on attention memory: the refine block is O(seq^2), so 32x32 -> 64x64 takes the
+   attention matrix from 537 MB to 8.6 GB at batch 32. The attention has to be pooled or
+   dropped first.
+
+Change one thing at a time. Bundling changes is what hid the ISTA divergence behind the
+value clip in the first place.
 
 ### Planned: port to PyTorch (after the current deadline)
 
