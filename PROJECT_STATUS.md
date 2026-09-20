@@ -64,8 +64,10 @@ SNR-aware wins on average and specifically in the low-SNR band it targets, thoug
 3. Final report: pruning comparison (magnitude vs snr_aware) + robustness test
 ```
 
-### Notebook 4 — nested/scattering-path robustness test (not yet built)
-Supervisor's idea: fix 3 principal paths per scene (**many independent scenes**, not one -- a single fixed scene would let the model memorize positions and gives no statistical spread), sweep a 4th nuisance path's power (−20/−10/0dB) within each scene while holding the 3 principal paths + noise constant, check whether the compressed model's recovery of the original 3 paths degrades faster than the teacher's as interference increases. Needs the saved snr_aware student's weights (step 1 above).
+### Notebook 4 — nested/scattering-path robustness test — 🔲 built, not yet run
+`DLDOA_Compression_04_NestedPathRobustness.ipynb`. Supervisor's idea: fix 3 principal paths per scene (**200 independent scenes**, not one -- a single fixed scene would let the model memorize positions and gives no statistical spread), sweep a 4th nuisance path's power (−20/−10/0dB) within each scene while holding the 3 principal paths + noise constant, at 2 SNR levels (0dB, 15dB). Checks whether the r8-magnitude student's recovery of the 3 principal paths degrades faster than the teacher's as interference increases (separately from whether the nuisance path itself gets detected).
+
+**Evaluation only — no training, runs in minutes.** Uses the teacher directly + the r8-magnitude student's weights, which were recovered from a committed Kaggle Version's Output Data panel (a "Save Version" from an earlier run had actually persisted, discovered after the session initially thought both students' weights were lost) rather than needing a costly re-run. The snr_aware student's weights are still not recovered/saved -- this test currently only covers the magnitude-pruned student.
 
 ---
 
