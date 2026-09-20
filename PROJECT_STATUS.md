@@ -40,8 +40,8 @@ Three-notebook pipeline, each hard-capped at **2.5h wall-clock** (Kaggle T4). Fr
 | Notebook | Status | What it does |
 |---|---|---|
 | `DLDOA_Compression_01_Foundation.ipynb` | ✅ All checks passed | Frozen-bank teacher spot-check, weight-transfer equivalence test (r=12 identity, matches to 2.4e-07), per-step timing |
-| `DLDOA_Compression_02_PruneAndFinetune.ipynb` | ✅ 2 runs complete | Channel pruning (12→8 width, 33% fewer params). Two selection methods compared: **magnitude-based** vs **SNR-stratified Taylor-importance** (`snr.ipynb` = the executed snr_aware run) |
-| `DLDOA_Compression_03_LowRank.ipynb` | 🔲 Built, not yet run | Low-rank filter factorization (Jaderberg/Denton-style), rank R picked via a **data-driven sweep** on the calibration bank (not guessed) |
+| `DLDOA_Compression_02_PruneAndFinetune.ipynb` | ✅ 2 runs complete — **this is now the headline result** | Channel pruning (12→8 width, 33% fewer params). Two selection methods compared: **magnitude-based** vs **SNR-stratified Taylor-importance** (`snr.ipynb` = the executed snr_aware run) |
+| `DLDOA_Compression_03_LowRank.ipynb` | ❌ **Dropped from the plan** (2026-09-21) | Notebook exists and its math was verified locally (SVD reconstruction, see Gotchas), but the low-rank axis was dropped to keep scope to a single, well-validated compression story within the time budget. Kept in the repo for reference / a possible future follow-up, not part of the current deliverable. |
 
 ### Compression results so far (r=8, 33% param reduction, 1200-sample subsampled eval)
 
@@ -54,9 +54,18 @@ SNR-aware wins on average and specifically in the low-SNR band it targets, thoug
 
 **Unexpected finding**: compression hurts *mid-to-high* SNR (10-25dB) more than low SNR — opposite of the initial hypothesis. Likely because low-SNR performance is already noise-limited for both models (little room to get worse), while high-SNR performance is close to the ceiling and needs the full parameter budget for precision.
 
-### Not yet built
-- **Notebook 4 — nested/scattering-path robustness test** (supervisor's idea): fix 3 principal paths per scene (many independent scenes, not one), sweep a 4th nuisance path's power (−20/−10/0dB), check whether compression makes recovery of the original 3 paths more fragile under interference. Needs a trained student's weights (see gotcha above).
-- **Low-rank × pruning combined** — only after Notebook 3 validates the low-rank axis alone.
+### Updated plan (low-rank dropped, 2026-09-21)
+```
+1. Re-run Notebook 2 with SELECTION_METHOD='snr_aware' (the winning method so far)
+   -- this time click "Save Version -> Save & Run All (Commit)" at the end,
+   so the student weights actually persist (lost twice already, see Gotchas)
+2. Build Notebook 4 -- nested/scattering-path robustness test (below), using
+   that saved snr_aware student vs the teacher
+3. Final report: pruning comparison (magnitude vs snr_aware) + robustness test
+```
+
+### Notebook 4 — nested/scattering-path robustness test (not yet built)
+Supervisor's idea: fix 3 principal paths per scene (**many independent scenes**, not one -- a single fixed scene would let the model memorize positions and gives no statistical spread), sweep a 4th nuisance path's power (−20/−10/0dB) within each scene while holding the 3 principal paths + noise constant, check whether the compressed model's recovery of the original 3 paths degrades faster than the teacher's as interference increases. Needs the saved snr_aware student's weights (step 1 above).
 
 ---
 
