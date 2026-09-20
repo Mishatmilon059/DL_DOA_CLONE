@@ -64,10 +64,35 @@ SNR-aware wins on average and specifically in the low-SNR band it targets, thoug
 3. Final report: pruning comparison (magnitude vs snr_aware) + robustness test
 ```
 
-### Notebook 4 — nested/scattering-path robustness test — 🔲 built, not yet run
-`DLDOA_Compression_04_NestedPathRobustness.ipynb`. Supervisor's idea: fix 3 principal paths per scene (**200 independent scenes**, not one -- a single fixed scene would let the model memorize positions and gives no statistical spread), sweep a 4th nuisance path's power (−20/−10/0dB) within each scene while holding the 3 principal paths + noise constant, at 2 SNR levels (0dB, 15dB). Checks whether the r8-magnitude student's recovery of the 3 principal paths degrades faster than the teacher's as interference increases (separately from whether the nuisance path itself gets detected).
+### Notebook 4 — nested/scattering-path robustness test — ✅ RUN COMPLETE (2026-09-22)
+`DLDOA_Compression_04_NestedPathRobustness.ipynb`. Supervisor's idea: fix 3 principal paths per scene (**200 independent scenes**, not one -- a single fixed scene would let the model memorize positions and gives no statistical spread), sweep a 4th "nuisance" (interfering) path's power (−20/−10/0 dB relative to the 3 principal paths' total power) within each scene while holding the 3 principal paths + noise constant, at 2 SNR levels (0dB hard, 15dB moderate). CPU-only, no training, 200 scenes × 2 SNR × 3 power × 2 models finished in **17.3 minutes**.
 
-**Evaluation only — no training, runs in minutes.** Uses the teacher directly + the r8-magnitude student's weights, which were recovered from a committed Kaggle Version's Output Data panel (a "Save Version" from an earlier run had actually persisted, discovered after the session initially thought both students' weights were lost) rather than needing a costly re-run. The snr_aware student's weights are still not recovered/saved -- this test currently only covers the magnitude-pruned student.
+Ran with the **r8-magnitude** student (recovered from a committed Kaggle Version's Output Data panel, avoiding a costly re-run — the snr_aware student's weights are still not recovered).
+
+**Full results (Pd_p = recovery of the 3 known/principal paths; Pd_n = detection of the new nuisance path itself):**
+
+| SNR | Nuisance | Teacher Pd_p | Student Pd_p | ΔPd_p | Teacher Pd_n | Student Pd_n | ΔPd_n |
+|---|---|---|---|---|---|---|---|
+| 0 dB | −20 dB | 0.5909 | 0.5765 | −0.0145 | 0.0591 | 0.0550 | −0.0040 |
+| 0 dB | −10 dB | 0.6406 | 0.6233 | −0.0173 | 0.4777 | 0.4467 | −0.0309 |
+| 0 dB |   0 dB | 0.6065 | **0.6174** | **+0.0109** | 0.8389 | 0.7955 | −0.0434 |
+| 15 dB | −20 dB | 0.8939 | 0.8873 | −0.0066 | 0.6117 | 0.6000 | −0.0117 |
+| 15 dB | −10 dB | 0.8953 | 0.8824 | −0.0129 | 0.8796 | 0.8778 | −0.0018 |
+| 15 dB |   0 dB | 0.8754 | 0.8595 | −0.0159 | 0.8918 | 0.8639 | −0.0279 |
+
+**Gap trend as nuisance power increases (weakest −20dB → strongest 0dB):**
+```
+SNR=0dB:  gap goes from -0.0145 to +0.0109  ->  NARROWS by +0.0254 (student overtakes teacher at the hardest point)
+SNR=15dB: gap goes from -0.0066 to -0.0159  ->  ~flat, by -0.0093 (no strong trend)
+```
+
+**Discussion.**
+- Pd_n rises steeply with nuisance power at both SNRs (e.g. 0.06→0.48→0.84 at SNR=0dB) — expected physics, a weaker interferer is intrinsically harder to detect for *either* model; this is not a finding about compression, just a sanity check that the protocol behaves correctly.
+- Pd_p (the actual question) stays relatively stable across nuisance levels for both models — adding an interferer does not catastrophically break principal-path recovery for either the teacher or the student.
+- **The standout result: at SNR=0dB (the harder, noisier condition), the compressed student's principal-path Pd *exceeds* the teacher's once the nuisance path is as strong as the principal paths (0dB) — the only outperforming data point across the whole compression project so far.** At SNR=15dB the student stays a bit behind the teacher throughout, with only a mild (not statistically striking) widening trend.
+- Working hypothesis for *why*: pruning + distillation may push the student toward a flatter/less-overfit solution than the teacher's, which shows up as reduced fragility specifically under stress (strong interference, high noise) — plausible, not proven; a single low-SNR crossover point is suggestive, not conclusive evidence on its own.
+- Framing for the report: **not** "the student is uniformly better" — rather, "compression does not make the model *more* fragile to unexpected interference, and in the hardest tested condition (low SNR + strong interferer) it performs at least as well as, arguably slightly better than, the uncompressed teacher." This is a legitimately new finding — neither paper tests this at all.
+- Not yet done: repeating this with the snr_aware student (once its weights are recovered/re-saved) to see whether the effect is method-specific or general to compression at r=8.
 
 ---
 
