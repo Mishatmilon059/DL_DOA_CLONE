@@ -96,6 +96,30 @@ SNR=15dB: gap goes from -0.0066 to -0.0159  ->  ~flat, by -0.0093 (no strong tre
 
 ---
 
+## Architecture screening — alternatives to the ResNet block (🔲 built, not yet run, 2026-09-24)
+
+`DLDOA_Architecture_Screening_4Way.ipynb`. Separate track from the compression project — asks whether a fundamentally different core block (not just a smaller/factorized ResNet) suits this specific 2D-frequency-estimation task better. Deep-research-grounded (web search, not guessed) before building; full citations captured in this session's research turn.
+
+**4 candidates, all wrapped in the identical input/output shell** (`build_model_with_body(body_fn)` — same pattern as `build_pruned_resnet`/`build_lowrank_resnet`, only the core block differs):
+
+| Candidate | Core idea | Why it fits *this* task specifically |
+|---|---|---|
+| SIREN-body | sin() activations throughout | Our signal literally *is* a sum of sinusoids; SIREN is designed to overcome spectral bias, connecting to the "compression hurts high-SNR precision" finding above |
+| FNO-body | Spectral (Fourier-domain) convolution | Input Y is already a frequency-domain representation; FNO gives near-free global receptive field instead of 64 stacked local-receptive-field blocks |
+| Window-Attention-body | Local-neighborhood self-attention | Adapted stand-in for message-passing/GNN DOA work (true antenna-graph would need a non-image input, out of scope here) |
+| Gridless-Unfold-body | Learned complex soft-threshold refinement | Directly targets our own **Pd ceiling ≈0.972** finding (gridless = no pixel quantization); explicitly fixes PIA-Net's known bug (magnitude-soft-threshold + exact phase preservation, not ReLU-clamped real values) |
+
+**Explicit scope compromise (stated in the notebook itself):** 8 blocks each (not 64 — none of these have pretrained weights to warm-start from, so shallower depth keeps the 4-way comparison fair), ~20 min hard-capped training per architecture, simplified/adapted versions of each literature family rather than literal reproductions. This is a **screening study** — answers "which family shows enough promise to invest in further," not "which is best at paper scale."
+
+**Verified locally (pure numpy) before writing any TF code**, given this project's history of axis/reshape bugs (Conv2 slicing, SVD transpose):
+1. FNO spectral-conv round-trip (rfft2 → mode-truncated complex-weight multiply → irfft2) — finite, correctly-shaped, sane-scale output
+2. Complex soft-threshold — phase preserved exactly for a purely-imaginary input (the exact case that broke PIA-Net), magnitude correctly reduced by the threshold
+3. Even/odd channel-pair interleave-back (stack+reshape) — reproduces original channel order exactly
+
+**Bug caught and fixed before pushing:** the batch-size probe originally ran gradient steps on the *real* model being trained (garbage updates from random noise before real training started) — fixed to probe with a disposable throwaway model, matching the Notebook 2/3 pattern.
+
+---
+
 ## Proposed next-stage direction (for a second Q1 paper, not scoped into the 1-week plan)
 
 Replace the heatmap+blob-detection output head with a **differentiable set-prediction** architecture (DETR-style query slots, Hungarian-matching loss) — removes the pixel-quantization step that causes the Pd ceiling, and naturally handles unknown path count L (neither paper does — both assume L is given at evaluation). See `My_Proposed_Architecture.md` for the original 3-stage sketch this connects to.
