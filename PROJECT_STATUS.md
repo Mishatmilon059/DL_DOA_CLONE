@@ -109,7 +109,7 @@ SNR=15dB: gap goes from -0.0066 to -0.0159  ->  ~flat, by -0.0093 (no strong tre
 | Window-Attention-body | Local-neighborhood self-attention | Adapted stand-in for message-passing/GNN DOA work (true antenna-graph would need a non-image input, out of scope here) |
 | Gridless-Unfold-body | Learned complex soft-threshold refinement | Directly targets our own **Pd ceiling ≈0.972** finding (gridless = no pixel quantization); explicitly fixes PIA-Net's known bug (magnitude-soft-threshold + exact phase preservation, not ReLU-clamped real values) |
 
-**Explicit scope compromise (stated in the notebook itself):** 8 blocks each (not 64 — none of these have pretrained weights to warm-start from, so shallower depth keeps the 4-way comparison fair), ~20 min hard-capped training per architecture, simplified/adapted versions of each literature family rather than literal reproductions. This is a **screening study** — answers "which family shows enough promise to invest in further," not "which is best at paper scale."
+**Explicit scope compromise (stated in the notebook itself):** 8 blocks each (not 64 — none of these have pretrained weights to warm-start from, so shallower depth keeps the 4-way comparison fair), ~32.5 min hard-capped training per architecture (derived, see time-budget fix below), simplified/adapted versions of each literature family rather than literal reproductions. This is a **screening study** — answers "which family shows enough promise to invest in further," not "which is best at paper scale."
 
 **Verified locally (pure numpy) before writing any TF code**, given this project's history of axis/reshape bugs (Conv2 slicing, SVD transpose):
 1. FNO spectral-conv round-trip (rfft2 → mode-truncated complex-weight multiply → irfft2) — finite, correctly-shaped, sane-scale output
@@ -117,6 +117,12 @@ SNR=15dB: gap goes from -0.0066 to -0.0159  ->  ~flat, by -0.0093 (no strong tre
 3. Even/odd channel-pair interleave-back (stack+reshape) — reproduces original channel order exactly
 
 **Bug caught and fixed before pushing:** the batch-size probe originally ran gradient steps on the *real* model being trained (garbage updates from random noise before real training started) — fixed to probe with a disposable throwaway model, matching the Notebook 2/3 pattern.
+
+**Time-budget hardening (user directly questioned whether eval fits in 2.5h — correctly, since the first version only guessed):**
+- Cell 5: added `EVAL_RESERVE_MINUTES=20` and derived `PER_ARCH_BUDGET_HOURS = (TOTAL_TIME_BUDGET_HOURS - EVAL_RESERVE_MINUTES/60) / 4` (≈32.5 min/arch instead of a flat guessed 20 min/arch), so training and eval reserve are mutually consistent by construction.
+- Cell 14: training loop now hard-stops (`elapsed_hours() + PER_ARCH_BUDGET_HOURS > train_ceiling_hours`) before eating into the protected eval reserve.
+- **This only protects training, not eval — caught on follow-up.** Cell 15 actually calls `evaluate_on_bank` 5 times (all 4 architectures *plus* the teacher), and that function's cost is dominated by per-sample CPU blob detection + Hungarian matching, not GPU inference — it does not scale the way training does, and the flat 20-minute reserve was never verified against real throughput. Added **Cell 12b**: benchmarks all 5 models for real on a small (16-sample) slice right after they're built, projects the full Cell 15 eval time from measured per-sample cost, and **auto-shrinks `N_PER_SNR_EVAL`** (re-slicing the eval subsample) if the measured throughput would exceed the reserve — so the eval set size is evidence-based, not assumed. Its own benchmarking cost is automatically deducted from the training budget too, since it runs before Cell 14 and `elapsed_hours()` is cumulative from Cell 1.
+- Still-open honest caveat (documented in the notebook's Cell 0, not fixed — accepted trade-off): equal **wall-clock** budget per architecture is not equal **gradient-step count** — FNO (FFT/iFFT per block) and Window-Attention (reshape+MHA per block) are more expensive per step than SIREN/Gridless-Unfold (plain convs), so they'll complete fewer epochs in the same ~32.5 min. A promising candidate from this run should get a step-count-matched follow-up before being taken as a real result, not just a paper-scale claim from this screening pass alone.
 
 ---
 
