@@ -19,24 +19,32 @@ access (e.g. BUET's IEEE Xplore subscription), not fetched here.
 | `Robust_DoA_Estimation_Using_Denoising_Autoencoder_and_Deep_Neural_Networks.pdf` | — | — | Already present, unrelated to this batch |
 | `SubspaceNet_Deep_Learning-Aided_Subspace_Methods_for_DoA_Estimation.pdf` | — | — | Already present, unrelated to this batch |
 
-## NOT downloaded — paywalled, no open-access version found
+## Downloaded manually by the user via BUET institutional access (2026-09-23)
 
-Checked arXiv, the publisher page directly, and ResearchGate for each; none had a
-legitimately downloadable free PDF (ResearchGate "Request PDF" pages require the
-author to grant access manually, which isn't something to attempt automatically).
-Get these via BUET's institutional IEEE Xplore / ACM DL / Springer access, or by
-directly messaging the authors (all have ResearchGate profiles, "Request full-text" is
-a normal, legitimate ask).
+All 5 of the previously-paywalled Tier-1/2 papers, confirmed by checking each PDF's
+embedded DOI/title metadata against the requested list (no title-only guessing):
+
+| File | Paper | Venue | DOI (verified in file) |
+|---|---|---|---|
+| `Bayesian_Learning_Aided_Parameter_Estimation_and_Joint_Beamformer_Design_in_mmWave_MIMO-OFDM_ISAC_Systems.pdf` | Gupta et al. | IEEE TCOMM 2025 | 10.1109/TCOMM.2025.3578813 ✓ |
+| `Deep_Learning-Enabled_Angle_Estimation_in_Bistatic_ISAC_Systems.pdf` | Naoumi et al. | IEEE GCWkshps 2023 | 10.1109/GCWkshps58843.2023.10464930 ✓ |
+| `Energy and robustness trade-offs in adaptive neural mmWave channel estimation on edge devices.pdf` | Meneses-Albalá et al. | Springer J. Supercomputing 2026 | Confirmed by content (19 pages, "Springer"+"Meneses" both present; DOI not in first 200KB of metadata but this is the real paper) |
+| `MIMO_Radar_Aided_mmWave_Time-Varying_Channel_Estimation_in_MU-MIMO_V2X_Communications.pdf` | Huang et al. | IEEE TWC 2021 | 10.1109/TWC.2021.3085823 ✓ |
+| `Tensor-Based_Joint_Channel_Estimation_and_Symbol_Detection_for_Time-Varying_mmWave_Massive_MIMO_Systems.pdf` | Du et al. | IEEE TSP 2021 | 10.1109/TSP.2021.3125607 ✓ |
+| `Naoumi_2024_ComplexNN_JSTSP_official_IEEE_version.pdf` | Naoumi et al. (same paper as the arXiv copy above, official IEEE-formatted version) | IEEE JSTSP 2024 | 10.1109/JSTSP.2024.3387299 ✓ — bonus, better for citing than the arXiv preprint |
+
+**One file from this batch was a mislabeled duplicate, removed**: a file saved as
+`Deep-Learning-Based_AoA_and_AoD_Estimation_in_Analog_Millimeter_Wave_MIMO_Systems.pdf`
+turned out to be another copy of the TVT 2026 base paper (DOI 10.1109/TVT.2025.3637908,
+already present as `Deep_Learning_Based_AoA_and_AoD_Estimation_in_Analog_Millimeter (1).pdf`)
+— not the EATIS 2024 paper it was meant to be. Deleted to avoid confusion.
+
+## Still NOT downloaded — genuinely missing
 
 | # | Paper | Venue | DOI | Where to get it |
 |---|---|---|---|---|
-| 3 | Lloria et al., "Deep Learning Based AoA and AoD Estimation for Millimeter Wave MIMO Systems" | ACM EATIS 2024 | 10.1145/3685243.3685247 | [ACM DL](https://dl.acm.org/doi/10.1145/3685243.3685247) |
-| 5 | Meneses-Albalá et al., "Energy and Robustness Trade-offs in Adaptive Neural mmWave Channel Estimation on Edge Devices" | Springer J. Supercomputing 2026 | 10.1007/s11227-026-08246-6 | [Springer](https://link.springer.com/article/10.1007/s11227-026-08246-6) (redirects to login — confirmed not open access) |
-| 6 | Naoumi et al., "Deep Learning-Enabled Angle Estimation in Bistatic ISAC Systems" | IEEE GCWkshps 2023 | 10.1109/GCWkshps58843.2023.10464930 | Earlier/shorter version of paper #1 above (which IS downloaded) — lower priority |
-| 7 | Huang et al., "MIMO Radar Aided mmWave Time-Varying Channel Estimation in MU-MIMO V2X Communications" | IEEE TWC 2021 | 10.1109/TWC.2021.3085823 | [IEEE Xplore](https://ieeexplore.ieee.org/document/9449980/) |
-| 8 | Tong et al., "Deep Learning Compressed Sensing-Based Beamspace Channel Estimation in mmWave Massive MIMO Systems" | — | (not searched yet — lower priority per the original list) | — |
-| 9 | Du et al., "Tensor-Based Joint Channel Estimation and Symbol Detection for Time-Varying mmWave Massive MIMO Systems" | IEEE TSP 2021 | 10.1109/TSP.2021.3125607 | [IEEE Xplore](https://ieeexplore.ieee.org/document/9606606/) |
-| 10 | Gupta et al., "Bayesian Learning Aided Parameter Estimation and Joint Beamformer Design in mmWave MIMO-OFDM ISAC Systems" | IEEE TCOMM 2025 | 10.1109/TCOMM.2025.3578813 | [IEEE Xplore](https://ieeexplore.ieee.org/iel8/26/11245648/11030617.pdf) (confirmed paywalled, not just geo-blocked) |
+| 3 | Lloria et al., "Deep Learning Based AoA and AoD Estimation for Millimeter Wave MIMO Systems" | ACM EATIS 2024 | 10.1145/3685243.3685247 | [ACM DL](https://dl.acm.org/doi/10.1145/3685243.3685247) — the one paper from the original list still missing |
+| 8 | Tong et al., "Deep Learning Compressed Sensing-Based Beamspace Channel Estimation in mmWave Massive MIMO Systems" | — | (not searched yet — lowest priority per the original list, no DOI given) | — |
 
 ## Notes for the literature review
 
