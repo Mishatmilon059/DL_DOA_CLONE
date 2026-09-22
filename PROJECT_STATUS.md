@@ -158,6 +158,32 @@ Full 4.21h run: 8 blocks/arch, 200 epochs x 100 steps (20,000 gradient steps/arc
 
 **Recommended before finalizing the thesis narrative**: a cheap follow-up sweep (a handful of learning rates, far fewer epochs, just for SIREN and Window-Attention) to check whether they're salvageable — not yet done. Until then, the honest framing is "FNO clearly wins under this fixed training config; SIREN/Window-Attention's poor result may be a hyperparameter mismatch rather than a settled architectural verdict."
 
+### Baseline models registry (2026-09-22)
+
+`baseline_models/` — Teacher, Student (r8-magnitude), and FNO weights + a rigorous
+full-8000-sample-bank comparison, kept as the reference point for every future
+architecture/compression experiment (see the folder's own README for reload code and
+how to add a 4th model). Built because the Student had never actually been evaluated
+on the same full bank as Teacher/FNO before (its only prior number was ΔPd on a
+1200-sample subsample) — evaluated it locally (CPU, 42 min) to make the comparison
+genuinely apples-to-apples, and cross-checked Teacher's CPU-run number against its
+GPU-run number from the same session: **exact match to 13+ significant figures**
+(0.7103495885388549 both times), confirming the evaluator is fully deterministic.
+
+| Model | Params | Mean Pd (full bank) | vs Teacher |
+|---|---|---|---|
+| Teacher | 469,393 | 0.7103 | — |
+| **Student (r8-magnitude)** | 314,513 | **0.6956** | −0.0147 |
+| FNO (screening) | 334,321 | 0.6235 | −0.0869 |
+
+**New finding from this apples-to-apples pass**: the Student is currently the stronger
+of the two compressed/alternative candidates — smaller than FNO *and* much closer to
+the teacher's Pd. FNO's result is still meaningful given it trained from scratch (no
+warm start) at 8 blocks vs the Student's/Teacher's 64, but on a raw "which model
+performs best" basis, the Student currently wins. FNO also degrades more at high SNR
+(15-25dB) specifically — worth investigating whether the spectral representation is
+losing fine-grained precision once noise stops being the bottleneck.
+
 ---
 
 ## Proposed next-stage direction (for a second Q1 paper, not scoped into the 1-week plan)

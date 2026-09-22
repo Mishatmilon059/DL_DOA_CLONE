@@ -1,0 +1,28 @@
+{
+  "note": "All 3 models evaluated on the IDENTICAL full 8000-sample frozen eval bank (frozen_banks/eval_bank.npz, 1000 samples x 8 SNR points, -10..25 dB, L=3 paths, nt=nr=16), with the exact same evaluate_on_bank function. Teacher/FNO numbers from a GPU run (RTX 5090, 2026-09-22, see notebooks/outputs_full_eval/); Student and a Teacher cross-check were run separately on local CPU (2026-09-22) -- the Teacher cross-check matched the GPU number EXACTLY (0.7103495885388549 both times, to 13+ significant figures), confirming the evaluator is fully deterministic and these 3 numbers are directly, rigorously comparable.",
+  "eval_bank": "frozen_banks/eval_bank.npz (8000 samples, full bank, no subsampling)",
+  "models": {
+    "teacher": {
+      "params": 469393,
+      "mean_pd": 0.7103495885388549,
+      "pd": {"-10": 0.2039665211062591, "-5": 0.4365862573099415, "0": 0.6392543859649122, "5": 0.7788671023965141, "10": 0.8623417721518988, "15": 0.898895790200138, "20": 0.9252991452991453, "25": 0.9375857338820301},
+      "rmse": {"-10": 0.5526123074681126, "-5": 0.5117408407695836, "0": 0.4577647382362074, "5": 0.3918079369923571, "10": 0.3255436086598761, "15": 0.27941077072889975, "20": 0.2533901767426149, "25": 0.23725761754163932},
+      "source_run": "GPU (RTX 5090), 2026-09-22 -- notebooks/outputs_full_eval/architecture_fulleval_results.json",
+      "crosscheck_run": "CPU, 2026-09-22 -- identical to 13+ sig figs, see architecture below"
+    },
+    "student_r8_magnitude": {
+      "params": 314513,
+      "mean_pd": 0.6956552156438391,
+      "pd": {"-10": 0.19622778382299602, "-5": 0.4334077380952381, "0": 0.6307922272047832, "5": 0.7592387287509239, "10": 0.8422364672364673, "15": 0.8827549947423764, "20": 0.9050610820244328, "25": 0.9155227032734953},
+      "rmse": {"-10": 0.5482522475680397, "-5": 0.5221817989944719, "0": 0.47044529813072045, "5": 0.40500871809204264, "10": 0.35649271857184794, "15": 0.31880520135979457, "20": 0.3014099374702214, "25": 0.2902693895489547},
+      "source_run": "CPU, 2026-09-22 -- first full-8000-sample-bank evaluation of this student (previous number was Delta-Pd vs teacher on a 1200-sample subsample from Notebook 2)"
+    },
+    "fno_screening": {
+      "params": 334321,
+      "mean_pd": 0.6234771645810699,
+      "pd": {"-10": 0.20311952330879776, "-5": 0.41343126967471144, "0": 0.6103741496598639, "5": 0.7217659137577002, "10": 0.7959680222453945, "15": 0.7962003454231433, "20": 0.7460235131396957, "25": 0.7009345794392523},
+      "rmse": {"-10": 0.5545587402778495, "-5": 0.520783539357601, "0": 0.4784296861903337, "5": 0.428636257105589, "10": 0.415091166627251, "15": 0.4145714367435037, "20": 0.43126918832339906, "25": 0.44726753043713857},
+      "source_run": "GPU (RTX 5090), 2026-09-22 -- notebooks/outputs_full_eval/architecture_fulleval_results.json"
+    }
+  }
+}
