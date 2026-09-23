@@ -1,0 +1,10 @@
+# Linux + NVIDIA GPU. On macOS use "tensorflow" + "tensorflow-metal" instead of the [and-cuda] line.
+tensorflow[and-cuda]>=2.16
+numpy
+scipy
+opencv-python-headless
+matplotlib
+h5py
+jupyterlab
+nbconvert
+ipykernel

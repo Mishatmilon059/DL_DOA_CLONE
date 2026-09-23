@@ -7,3 +7,10 @@ IABR_Net_TestSuite/baseline_models/
 IABR_Net_TestSuite/outputs/
 IABR_Net_TestSuite/outputs_smoke/
 IABR_Net_TestSuite.zip
+ResNet_ImpairmentFineTune_Suite/DL_DOA/
+ResNet_ImpairmentFineTune_Suite/baseline_models/
+ResNet_ImpairmentFineTune_Suite/frozen_banks/
+ResNet_ImpairmentFineTune_Suite/dldoa_dataset_generation.py
+ResNet_ImpairmentFineTune_Suite.zip
+outputs_resnet_ft/
+outputs_resnet_ft_smoke/
