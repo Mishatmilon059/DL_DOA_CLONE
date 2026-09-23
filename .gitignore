@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 dataset.zip
 frozen_banks/
+IABR_Net_TestSuite/data/
+IABR_Net_TestSuite/baseline_models/
+IABR_Net_TestSuite/outputs/
+IABR_Net_TestSuite/outputs_smoke/
+IABR_Net_TestSuite.zip

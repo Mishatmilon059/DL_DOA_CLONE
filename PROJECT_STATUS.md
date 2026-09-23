@@ -186,6 +186,23 @@ losing fine-grained precision once noise stops being the bottleneck.
 
 ---
 
+## IABR-Net full test suite (🔲 built + smoke-verified, full GPU run pending, 2026-09-23)
+
+`IABR_Net_TestSuite/` — self-contained folder (notebook + original code + baseline weights + fixed banks + README) implementing **every test** in `ResearchState/FINAL_RESEARCH_REPORT.md` for the selected architecture, IABR-Net: E0a, E0b, V0, V1, 7 full training runs (IABR ×3 seeds, E1 capacity control, E2 dense front-end, Abl-1 no IABC-v2, Abl-3 no SE) + 12 Abl-6 sweep runs, E3, Abl-2, E4–E8, SNR tails, E10, E11, E9. One notebook: `notebooks/IABR_Net_Full_Test_Suite.ipynb`. Results → `outputs/RESULTS.md` + per-experiment JSON/tables/figures; per-experiment caching, resumable checkpoints, and a failing experiment does not stop the suite.
+
+**Built into it (Phase-0 code the report said was missing):** per-antenna gain-error injection; IABR-Net with the Addendum-A1 corrected stage 0 (inverse square codebook on the observed beamspace `Y`); a FLOP counter (TF profiler + analytic supplement for FFT/complex ops); strict Pd, source Pd, AoA/AoD-separate RMSE, P95 and end-fire P95; NN-only vs end-to-end latency; 56 fixed generated banks (sha256 manifest).
+
+**Verified locally (CPU, TF 2.21) before handing over** — not a full run:
+- E0a: all 11 physics checks PASS — vectorized simulator == original `generate_channel_v2` path to 3e-15, codebooks unitary, inverse codebook recovers `D_rᴴHD_t` to 8e-15, 16↔64 conversion bit-exact on the frozen bank.
+- E0b (first measured numbers, replacing the report's estimates): IABR-Net **195,024 params** (193,744 trainable; estimate 193,104), **97.2 M FLOPs** at batch 1 (estimate 95.3 M). Teacher measured at **15.2 GFLOPs** (my earlier hand estimate 15.1) — IABR-Net ≈157× fewer FLOPs.
+- The generated `.ipynb` executed end-to-end via `nbclient` in smoke mode: 26/26 experiments `done`, 0 error outputs.
+
+**Corrections to the report found while building it:** (1) the original training generator uses L ∈ {1..9}, so L = 7, 8 are in-distribution — only L = 10 is OOD; (2) the report's DFT-SIC "Pd 0.884" came from a per-source metric in the sanity notebook, not the paper-style evaluator — the suite re-scores DFT-SIC with the same evaluator as every model. Every other open design decision is listed in the suite's README §4 and marked `[ASSUMPTION]` in the notebook.
+
+**Next:** copy the folder to the GPU laptop and follow its README (smoke test first, then the full run). No full-run timing exists yet — the notebook logs a measured ETA per training run.
+
+---
+
 ## Proposed next-stage direction (for a second Q1 paper, not scoped into the 1-week plan)
 
 Replace the heatmap+blob-detection output head with a **differentiable set-prediction** architecture (DETR-style query slots, Hungarian-matching loss) — removes the pixel-quantization step that causes the Pd ceiling, and naturally handles unknown path count L (neither paper does — both assume L is given at evaluation). See `My_Proposed_Architecture.md` for the original 3-stage sketch this connects to.
