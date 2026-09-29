@@ -1,0 +1,96 @@
+--- cell 2 ---
+generator ready | array N = 16 | codebooks (16, 16) (16, 16)
+
+--- cell 9 ---
+path  psi(AoA)deg  phi(AoD)deg |   q (row)   p (col)   nearest cell
+  1      145.43      144.90   |    6.587     9.455    ( 7,  9)
+  2       51.44       92.76   |   11.014    15.615    (11,  0)
+  3       69.01        9.71   |   13.134     7.885    (13,  8)
+
+--- cell 11 ---
+path   |alpha|   |alpha|^2   phase(deg)   power share
+  1     0.705      0.496       108.7      51.8%
+  2     0.589      0.347       -58.7      36.2%
+  3     0.339      0.115       160.8      12.0%
+sum |alpha|^2 = 0.958   (expected value 1.0 over many draws)
+
+--- cell 13 ---
+max |H - sum_l H_l| = 4.47545209131181e-16 | singular values of H: [11.448  9.367  5.225  0.     0.   ]
+
+--- cell 15 ---
+unitarity error  ||F^H F - I|| = 1.7508336394546731e-15   ||W^H W - I|| = 1.7508336394546731e-15
+ideal hardware:  max | W^H H F  -  fft2(H)/N | = 5.2697130866910265e-14   -> the measurement is exactly a 2-D DFT of H
+
+--- cell 17 ---
+relative change ||Y_imp - Y_ideal|| / ||Y_ideal|| = 0.316   (-10.0 dB)
+
+--- cell 19 ---
+noise power per entry  mean|Z|^2 = 0.0281   (target 10^(-15/10) = 0.0316)
+signal power per entry mean|Y_ideal|^2 = 0.9613   (expected ~1 = sum|alpha|^2 = 0.958)
+this scene, realised SNR = 15.3 dB  (nominal 15 dB)
+
+--- cell 21 ---
+heat: shape (32, 32) | max 1.0 | #cells >= 0.99: 3 (one per path unless two paths round to the same cell)
+wrap example: row position 31.68 on the 32-grid -> blob occupies rows [0, 1, 31]  (rows 0,1 and 31: circular distance)
+
+--- cell 22 ---
+label check: Rx phase mean = -0.0 | Rx phase slope = 2e-09 | Tx phase mean = 0.0 | slope = 2.4e-08
+
+--- cell 26 ---
+one batch of 4 (training recipe):
+  y     shape (4, 2, 16, 16)  dtype float32   range [-7.824, 13.914]
+  heat  shape (4, 32, 32)  dtype float32   range [0.000, 1.000]
+  imp   shape (4, 32, 2)  dtype float32   range [-0.274, 0.235]
+  meta  L = [1 7 6 1] | SNR = [21. -7. -5. -8.] | clean = [ True False False False] | phase max = [0.   7.12 4.1  1.96] | gain max = [0.   0.64 2.22 1.89]
+
+--- cell 28 ---
+mean L = 5.05, clean fraction = 0.189, occupancy of end-fire row 8 = 24.1% vs uniform 6.25%
+number of training samples in the real run = 48000 x 256 = 12,288,000 (fresh each step, never stored)
+
+--- cell 30 ---
+scenes with two paths closer than one beam cell (both axes, wrap-aware) : 4.10%   (audit: 3.8-3.9%)
+scenes where two paths round to the SAME 32x32 label cell                : 0.40%   (audit: 0.33-0.37%)
+
+--- cell 32 ---
+case table (training + test) - exactly the knobs used above:
+case                          L   SNR  phase<=  gain<=
+train: L=1 clean              1    20      0.0     0.0
+train: L=3 clean              3    10      0.0     0.0
+train: L=5 mild               5     5      3.0     1.0
+train: L=9 max impair.        9    20      8.0     3.0
+train: L=3 lowest SNR         3   -15      4.0     1.5
+train: L=3 top SNR+impair     3    24      8.0     3.0
+official bank SNR -10         3   -10      0.0     0.0
+official bank SNR 25          3    25      0.0     0.0
+T2_d1 (1 deg) SNR 10          3    10      1.0     0.0
+T2_d2 (2 deg) SNR 10          3    10      2.0     0.0
+T2_d5 (5 deg) SNR 0           3     0      5.0     0.0
+T2_d5 (5 deg) SNR 25          3    25      5.0     0.0
+
+--- cell 36 ---
+PASS  codebooks unitary 
+PASS  Y_ideal == fft2(H)/N 
+PASS  H has rank L 
+
+--- cell 36 ---
+PASS  realised SNR ~ nominal (10 dB, 3000 scenes) [10.01 dB]
+
+--- cell 36 ---
+PASS  phase error uniform within +-delta 
+PASS  gain error within +-G dB 
+PASS  impairment label has zero mean and zero ramp 
+PASS  heat peak is exactly 1 in every scene 
+PASS  heat in [0,1] 
+
+--- cell 36 ---
+PASS  strongest bin of Y lies within 1 cell of a ground-truth path (60 dB) [100.0% of scenes]
+
+ 10 / 10 checks passed
+
+--- cell 37 ---
+compared with D:\ai_ml_project\dldoa_dataset_generation.py :  angle sampler identical = True | Tx codebook = True | Rx codebook = True
+
+--- cell 40 ---
+data/demo_scene_L3.npz                    24.6 KB
+data/train_recipe_batch64.npz            153.0 KB
+device: CPU (numpy only)
